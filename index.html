@@ -7,7 +7,15 @@
 	<script src="https://fb.me/react-0.14.7.js"></script>
 	<script src="https://fb.me/react-dom-0.14.7.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser.min.js"></script>
-
+	<style>
+		body {
+			margin-top: 20vh;
+		}
+		a.delete {
+			color: red;
+			text-decoration: none;
+		}
+	</style>
 
 </head>
 <body>
@@ -24,6 +32,7 @@
 			getInitialState: function (){
 				return{
 					text: '',
+					isEdit: 0,
 					todos: [
 						{
 							id: 1,
@@ -45,8 +54,17 @@
 			render: function(){
 				return(
 					<div>
-						<TodoForm todoAdd={this.handleTodoAdd}/>
-						<TodoList todos={this.state.todos} />
+						<TodoForm
+						{...this.state} 
+						todoAdd={this.handleTodoAdd}
+						changeText={this.handleChangeText}
+						todoUpdate={this.handleTodoUpdate}
+
+						/>
+						<TodoList 
+							todos={this.state.todos} 
+							todoDelete={this.handleTodoDelete} 
+							todoEdit={this.handleTodoEdit}/>
 					</div>
 				)
 			},
@@ -57,6 +75,35 @@
 					text: text
 				};
 				this.setState({todos: this.state.todos.concat(newTodo)});
+				this.setState({text: ''});
+			},
+			handleTodoDelete: function(todo) {
+				alert('handleTodoDelete: id='+todo.id);
+				var todos = this.state.todos;
+				todos.splice(todos.indexOf(todo),1);
+				this.setState({todos: todos});
+				this.setState({text: ''})
+			},
+			handleTodoEdit: function(todo) {
+				this.setState({
+					text: todo.text,
+					isEdit: todo.id
+				});
+			},
+			handleChangeText: function(text) {
+				this.setState({text: text});
+			},
+			handleTodoUpdate: function(todo) {
+				alert("handleTodoUpdate: props="+todo.text);
+				var todos = this.state.todos;
+				for (var i=0; i<todos.length; i++) {
+					if(todos[i].id == todo.id) {
+						todos[i].text = todo.text;
+					}
+				}
+				this.setState({isEdit: 0});
+				this.setState({todos: todos});
+				this.setState({text: ''});
 			}
 		});
 
@@ -67,14 +114,18 @@
 						<form onSubmit={this.handleOnSubmit}>
 							<div className="form-group">
 								<label>Enter To do</label>
-								<input type="text"	ref="text" onChange={this.handleOnChange} className="form-control"/>
+								<input 
+									type="text"	
+									ref="text" 
+									onChange={this.handleOnChange} className="form-control" 
+									value={this.props.text}/>
 							</div>
 						</form>
 					</div>
 				)
 			},
-			handleOnChange: function() {
-				console.log('handleOnChange fired');
+			handleOnChange: function(e) {
+				this.props.changeText(e.target.value);
 			},
 			handleOnSubmit: function(e) {
 				e.preventDefault();
@@ -83,8 +134,18 @@
 					alert('Cannot input empty string');
 					return;
 				}
-				console.log("handleOnSubmit: input = "+text);
-				this.props.todoAdd(text);
+				if(this.props.isEdit) {
+					console.log('is update');
+					var updatedTodo = {
+						id: this.props.isEdit,
+						text: text
+					}
+					this.props.todoUpdate(updatedTodo);
+				} 
+				else {
+					console.log("handleOnSubmit: input = "+text);
+					this.props.todoAdd(text);
+				}
 				this.refs.text.value = '';
 			}
 		}); 
@@ -95,11 +156,19 @@
 					<ul className="list-group">
 						{
 							this.props.todos.map(todo => {
-								return <li className="list-group-item" todo={todo} key={todo.id}>{todo.text}</li>
+								return <li className="list-group-item" todo={todo} key={todo.id}><span onClick={this.handleEdit.bind(this, todo)}>{todo.text}</span><a onClick={this.handleDelete.bind(this, todo)} href="#" className="delete">X</a></li>
 							})
 						}
 					</ul>
 				)
+			},
+			handleDelete: function(todo) {
+				console.log('handleDelete: id'+todo.id);
+				this.props.todoDelete(todo);
+			},
+			handleEdit: function(todo) {
+				console.log('handleEdit: id'+todo.id);
+				this.props.todoEdit(todo);
 			}
 		});
 		
