@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Learning React JS</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://fb.me/react-0.14.7.js"></script>
+	<script src="https://fb.me/react-dom-0.14.7.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser.min.js"></script>
+
+
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<div id="app"></div>
+			</div>
+		</div>
+	</div>
+	<script type="text/babel">
+
+		var App = React.createClass({
+			getInitialState: function (){
+				return{
+					text: '',
+					todos: [
+						{
+							id: 1,
+							text: 'Meeting at work'
+						},
+						{
+							id: 2,
+							text: 'Bring kids to school'
+						},
+						{
+							id: 3,
+							text: 'Food Shopping'
+						}
+					]
+
+				}
+			},
+
+			render: function(){
+				return(
+					<div>
+						<TodoForm todoAdd={this.handleTodoAdd}/>
+						<TodoList todos={this.state.todos} />
+					</div>
+				)
+			},
+			handleTodoAdd: function(text) {
+				alert("handleTodoAdd: props="+text);
+				var newTodo = {
+					id: this.state.todos.length + 1,
+					text: text
+				};
+				this.setState({todos: this.state.todos.concat(newTodo)});
+			}
+		});
+
+		var TodoForm = React.createClass({
+			render: function(){
+				return(
+					<div>
+						<form onSubmit={this.handleOnSubmit}>
+							<div className="form-group">
+								<label>Enter To do</label>
+								<input type="text"	ref="text" onChange={this.handleOnChange} className="form-control"/>
+							</div>
+						</form>
+					</div>
+				)
+			},
+			handleOnChange: function() {
+				console.log('handleOnChange fired');
+			},
+			handleOnSubmit: function(e) {
+				e.preventDefault();
+				var text = this.refs.text.value.trim();
+				if(!text) {
+					alert('Cannot input empty string');
+					return;
+				}
+				console.log("handleOnSubmit: input = "+text);
+				this.props.todoAdd(text);
+				this.refs.text.value = '';
+			}
+		}); 
+
+		var TodoList = React.createClass({
+			render: function() {
+				return(
+					<ul className="list-group">
+						{
+							this.props.todos.map(todo => {
+								return <li className="list-group-item" todo={todo} key={todo.id}>{todo.text}</li>
+							})
+						}
+					</ul>
+				)
+			}
+		});
+		
+		ReactDOM.render(
+				<App />,
+				document.getElementById('app')
+			
+		);
+	</script>
+</body>
+</html>
